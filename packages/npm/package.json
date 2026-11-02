@@ -1,5 +1,5 @@
 {
-  "name": "hypervisual",
+  "name": "@hypervisual-io/cli",
   "version": "0.1.0",
   "description": "HyperVisual CLI launcher: downloads and runs the `codi` binary for architecture diagrams as code.",
   "license": "Apache-2.0",
@@ -17,6 +17,9 @@
     "bin/",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=18"
   },
