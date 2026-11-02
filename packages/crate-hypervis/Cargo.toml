@@ -1,0 +1,15 @@
+[package]
+name = "hypervis"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+description = "Short alias for the HyperVisual CLI launcher (`hypervisual`): architecture diagrams as code."
+license = "Apache-2.0"
+homepage = "https://hypervisual.io"
+repository = "https://github.com/hypervisual-io/hypervisual"
+readme = "README.md"
+keywords = ["architecture", "diagrams", "c4", "mcp", "cli"]
+categories = ["command-line-utilities", "development-tools", "visualization"]
+
+[dependencies]
+hypervisual = { version = "0.1.0", path = "../crate" }
