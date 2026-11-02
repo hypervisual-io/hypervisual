@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hypervisual"
+version = "0.1.0"
+description = "HyperVisual CLI launcher: downloads and runs the `codi` binary for architecture diagrams as code."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.9"
+keywords = ["architecture", "diagrams", "diagrams-as-code", "c4", "mcp", "cli"]
+classifiers = [
+  "Environment :: Console",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Topic :: Software Development :: Documentation",
+]
+
+[project.urls]
+Homepage = "https://hypervisual.io"
+Repository = "https://github.com/hypervisual-io/hypervisual"
+
+[project.scripts]
+hypervisual = "hypervisual.launcher:main"
+codi = "hypervisual.launcher:main"

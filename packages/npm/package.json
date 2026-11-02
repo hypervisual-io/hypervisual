@@ -1,0 +1,35 @@
+{
+  "name": "hypervisual",
+  "version": "0.1.0",
+  "description": "HyperVisual CLI launcher: downloads and runs the `codi` binary for architecture diagrams as code.",
+  "license": "Apache-2.0",
+  "homepage": "https://hypervisual.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hypervisual-io/hypervisual.git",
+    "directory": "packages/npm"
+  },
+  "bin": {
+    "hypervisual": "bin/codi.js",
+    "codi": "bin/codi.js"
+  },
+  "files": [
+    "bin/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "keywords": [
+    "architecture",
+    "diagrams",
+    "diagrams-as-code",
+    "c4",
+    "mcp",
+    "cli"
+  ]
+}
