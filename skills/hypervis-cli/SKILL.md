@@ -20,7 +20,8 @@ scripts/hypervis-doctor.sh
 ```
 
 `command -v` also matches shell aliases and functions, but aliases defined only
-in an interactive profile may not load in a non-interactive shell.
+in an interactive profile may not load in a non-interactive shell. The doctor
+script also prints `hypervis --version`.
 
 If it is missing, install it (no account or token needed):
 
@@ -54,8 +55,10 @@ hypervis help render
 hypervis help scan
 ```
 
-These skills target v0.2.0 and later. v0.1.0 used the old `codi` names
-(`CODI-` codes, `codi_*` MCP tools); upgrade it.
+These skills target v0.2.0 and later. Check with `hypervis --version`
+(`hypervis version --json` for scripts) and record it next to generated
+output. v0.1.0 has no `--version` and uses the old `codi` names (`CODI-`
+codes, `codi_*` MCP tools); upgrade it.
 
 ## Grammar Essentials
 
@@ -93,9 +96,14 @@ Checkout[flowchart]:
 
 1. Write or edit `.hvis` source using a diagram-specific skill.
 2. Run `hypervis validate <file>`.
-3. Fix `error` and `critical` diagnostics; parse errors name the rule and fix.
+3. Fix `error` and `critical` diagnostics. Parse errors give the line and
+   column, a source excerpt with a caret, and a `hint` when one is known; only
+   the first parse error is reported, so re-run after each fix.
 4. Render with `hypervis render <file> --format svg -o <file.svg>`, or run
-   `scripts/hypervis-validate-render.sh <file.hvis>`.
+   `scripts/hypervis-validate-render.sh <file.hvis>`. Shorten any group title
+   that render flags with `HVIS-LAYOUT-001` (truncated title).
 
-`render` defaults to PNG, so pass `--format svg` for docs and review. Use PNG
-only when requested or required by a target system.
+`render` writes SVG unless `--format png` is given or `-o` ends in `.png`. Use
+PNG only when requested or required by a target system. A PNG render whose text
+no available font can draw fails with `HVIS-RENDER-FONT-001`/`-002` and writes
+no file; render SVG instead, or install a font that covers the text.

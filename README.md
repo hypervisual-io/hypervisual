@@ -34,8 +34,9 @@ To have the script check the attestation as well, set `HYPERVISUAL_VERIFY_ATTEST
 Validation runs the built-in diagram rules in Python, so `python3` 3.9+ must be on `PATH` (or set `HVIS_PYTHON_PATH`).
 
 ```bash
+hypervis --version
 hypervis validate diagram.hvis
-hypervis render diagram.hvis --format svg -o diagram.svg
+hypervis render diagram.hvis -o diagram.svg    # SVG by default; -o diagram.png for PNG
 hypervis help
 ```
 

@@ -5,8 +5,19 @@ Confirm the CLI is reachable before any command with `command -v hypervis`
 not fabricate output: there is no fallback renderer or validator. See
 `SKILL.md` for install and refusal rules.
 
-v0.1.0 commands: `render`, `validate`, `diff`, `expand`, `test`, `scan`, `mcp`,
-and `help`. There is no `--version` flag.
+Commands: `render`, `validate`, `diff`, `expand`, `test`, `scan`, `mcp`,
+`version`, and `help`.
+
+## Version
+
+```bash
+hypervis --version        # hypervis 0.2.0 (218d704 2026-11-06, aarch64-apple-darwin)
+hypervis version --json   # name, version, commit, commit_date, dirty, target
+```
+
+Use it to confirm the install before relying on these notes (they describe
+v0.2.0) and to record which CLI produced a render or validation result. v0.1.0
+has neither form.
 
 ## Help
 
@@ -46,9 +57,13 @@ hypervis render diagram.hvis --node PaymentService --format svg -o payment-servi
 hypervis render custom.hvis --type-path ./custom_type.py --format svg -o custom.svg
 ```
 
-Without options, `render` writes PNG to `<input>.png`; pass `--format svg -o
-<file>.svg` for documentation. Render validates first and fails on errors. See
-[rendering-and-scaling.md](./rendering-and-scaling.md) for sizing rules.
+The format is `--format` if given, else PNG when `-o` ends in `.png`, else SVG.
+Without `-o` the output is `<input>.svg` (or `<input>.png`). Render validates
+first and fails on errors. It also prints render-only warnings such as
+`HVIS-LAYOUT-001` (a group title too wide to fit, so it is truncated), and a
+PNG whose text cannot be drawn fails with `HVIS-RENDER-FONT-*` errors and no
+file. See [rendering-and-scaling.md](./rendering-and-scaling.md) for sizing
+and fonts.
 
 ## Scan
 
