@@ -1,5 +1,6 @@
 #!/bin/sh
-# HyperVisual CLI installer: downloads the `codi` binary from GitHub Releases.
+# HyperVisual CLI installer: downloads the release binary from GitHub Releases
+# and installs it as `hypervis`. It does not update an existing install.
 #   curl -fsSL https://raw.githubusercontent.com/hypervisual-io/hypervisual/main/install.sh | sh
 # Environment:
 #   HYPERVISUAL_VERSION      release tag to install (default: latest)
@@ -22,7 +23,6 @@ case "$os/$arch" in
   *) die "no prebuilt binary for $os/$arch yet (available: macOS arm64, Linux x86_64, Linux arm64)" ;;
 esac
 
-asset="codi-$target.tar.gz"
 if [ "$VERSION" = "latest" ]; then
   base="https://github.com/$REPO/releases/latest/download"
 else
@@ -42,8 +42,13 @@ fetch() {
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT INT TERM
 
-say "downloading $asset ($VERSION)"
-fetch "$base/$asset" "$tmp/$asset" || die "download failed: $base/$asset"
+# Releases up to v0.1.0 ship `codi-<target>.tar.gz`; later ones `hypervis-<target>.tar.gz`.
+asset=""
+for name in "hypervis-$target.tar.gz" "codi-$target.tar.gz"; do
+  if fetch "$base/$name" "$tmp/$name" 2>/dev/null; then asset="$name"; break; fi
+done
+[ -n "$asset" ] || die "download failed: no hypervis or codi archive for $target in release $VERSION"
+say "downloaded $asset ($VERSION)"
 fetch "$base/$asset.sha256" "$tmp/$asset.sha256" || die "checksum download failed"
 
 expected="$(cut -d' ' -f1 < "$tmp/$asset.sha256")"
@@ -56,10 +61,13 @@ else
 fi
 [ "$expected" = "$actual" ] || die "checksum mismatch for $asset"
 
-tar -xzf "$tmp/$asset" -C "$tmp"
+mkdir "$tmp/x"
+tar -xzf "$tmp/$asset" -C "$tmp/x"
+if [ -f "$tmp/x/hypervis" ]; then bin="$tmp/x/hypervis"; else bin="$tmp/x/codi"; fi
+[ -f "$bin" ] || die "archive $asset contains neither hypervis nor codi"
 mkdir -p "$INSTALL_DIR"
-install -m 755 "$tmp/codi" "$INSTALL_DIR/codi" 2>/dev/null || { cp "$tmp/codi" "$INSTALL_DIR/codi"; chmod 755 "$INSTALL_DIR/codi"; }
-say "installed $INSTALL_DIR/codi"
+install -m 755 "$bin" "$INSTALL_DIR/hypervis" 2>/dev/null || { cp "$bin" "$INSTALL_DIR/hypervis"; chmod 755 "$INSTALL_DIR/hypervis"; }
+say "installed $INSTALL_DIR/hypervis"
 
 case ":$PATH:" in
   *":$INSTALL_DIR:"*) ;;
@@ -70,3 +78,7 @@ py="${CODI_PYTHON_PATH:-python3}"
 if ! "$py" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)' >/dev/null 2>&1; then
   say "note: validation needs Python 3.9+ as python3 (or set CODI_PYTHON_PATH)"
 fi
+
+say "warning: this installer does not update hypervis. Re-run it to get a newer"
+say "release, or install with a package manager that handles updates:"
+say "  pipx install hypervis   |   cargo install hypervis   |   npx hypervis"
