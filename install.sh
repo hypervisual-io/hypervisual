@@ -1,6 +1,7 @@
 #!/bin/sh
 # HyperVisual CLI installer: downloads the release binary from GitHub Releases
-# and installs it as `hypervis`. It does not update an existing install.
+# and installs it as `hypervis`, with `hvis` as a short alias. It does not
+# update an existing install.
 #   curl -fsSL https://raw.githubusercontent.com/hypervisual-io/hypervisual/main/install.sh | sh
 # Environment:
 #   HYPERVISUAL_VERSION      release tag to install (default: latest)
@@ -67,7 +68,8 @@ if [ -f "$tmp/x/hypervis" ]; then bin="$tmp/x/hypervis"; else bin="$tmp/x/codi";
 [ -f "$bin" ] || die "archive $asset contains neither hypervis nor codi"
 mkdir -p "$INSTALL_DIR"
 install -m 755 "$bin" "$INSTALL_DIR/hypervis" 2>/dev/null || { cp "$bin" "$INSTALL_DIR/hypervis"; chmod 755 "$INSTALL_DIR/hypervis"; }
-say "installed $INSTALL_DIR/hypervis"
+ln -sf hypervis "$INSTALL_DIR/hvis"
+say "installed $INSTALL_DIR/hypervis (also available as hvis)"
 
 case ":$PATH:" in
   *":$INSTALL_DIR:"*) ;;

@@ -20,7 +20,7 @@ Or with the install script, which does not update an existing install (re-run it
 curl -fsSL https://raw.githubusercontent.com/hypervisual-io/hypervisual/main/install.sh | sh
 ```
 
-Prebuilt for macOS arm64 and Linux x86_64/arm64 (glibc 2.28+). The script installs `hypervis` to `~/.local/bin`; set `HYPERVISUAL_INSTALL_DIR` or `HYPERVISUAL_VERSION` to change the location or pin a release. Binaries are also attached to each [release](https://github.com/hypervisual-io/hypervisual/releases).
+Prebuilt for macOS arm64 and Linux x86_64/arm64 (glibc 2.28+). The script installs `hypervis` and the short alias `hvis` to `~/.local/bin`; set `HYPERVISUAL_INSTALL_DIR` or `HYPERVISUAL_VERSION` to change the location or pin a release. Binaries are also attached to each [release](https://github.com/hypervisual-io/hypervisual/releases).
 
 Validation runs the built-in diagram rules in Python, so `python3` 3.9+ must be on `PATH` (or set `CODI_PYTHON_PATH`).
 
