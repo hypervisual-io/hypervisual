@@ -1,0 +1,56 @@
+# Artificial deployment palette covering nested cluster resources and edge types.
+
+AllDeploymentNodes[deployment]:
+  - Internet[external-system]:
+      public: true
+  - GlobalCloud[cloud]:
+      - provider: aws
+      - environment: prod
+      - PrimaryRegion[region]:
+          - label: "primary region"
+          - provider: aws
+          - CoreNetwork[network]:
+              - ProdVpc[vpc]:
+                  - provider: aws
+                  - PrivateSubnet[subnet]:
+                      - PlatformCluster[cluster]:
+                          - provider: k8s
+                          - platform: kubernetes
+                          - GeneralNodePool[node-pool]:
+                              - WorkerNode[node]
+                          - AppNamespace[namespace]:
+                              - WebDeployment[deployment]:
+                                  - image: "registry.example.com/web:2026.06"
+                                  - WebPod[pod]:
+                                      - WebContainer[container]:
+                                          image: "registry.example.com/web:2026.06"
+                                      - ScratchVolume[volume]
+                              - ImportJob[job]:
+                                  image: "registry.example.com/importer:2026.06"
+                              - AppConfig[config-map]
+                              - AppSecret[secret]
+                              - PersistentDisk[persistent-volume]
+                              - DiskClaim[persistent-volume-claim]
+                          - DataNamespace[namespace]:
+                              - OrdersDatabase[database]:
+                                  encrypted: true
+                                  managed: true
+                              - EventQueue[queue]
+  - Internet --> WebDeployment:
+      type: routes-to
+      protocol: HTTPS
+  - WebPod --> DiskClaim:
+      type: mounts
+  - DiskClaim --> PersistentDisk:
+      type: mounts
+  - WebDeployment --> AppConfig:
+      type: uses-config
+  - WebDeployment --> AppSecret:
+      type: uses-secret
+  - ImportJob --> OrdersDatabase:
+      type: writes-to
+      protocol: TCP
+      encrypted: true
+  - ImportJob --> EventQueue:
+      type: publishes-to
+      protocol: AMQP

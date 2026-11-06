@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperVisual C4 Container"
+  short_description: "Author HyperVisual c4-container diagrams"
+  default_prompt: "Use $hypervis-c4-container to create a valid HyperVisual c4-container diagram."

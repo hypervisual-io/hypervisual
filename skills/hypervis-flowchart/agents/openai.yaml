@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperVisual Flowchart"
+  short_description: "Author HyperVisual flowchart diagrams"
+  default_prompt: "Use $hypervis-flowchart to create a valid HyperVisual flowchart diagram."

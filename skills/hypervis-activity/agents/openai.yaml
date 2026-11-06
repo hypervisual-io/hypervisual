@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperVisual Activity"
+  short_description: "Author HyperVisual activity diagrams"
+  default_prompt: "Use $hypervis-activity to create a valid HyperVisual activity diagram."

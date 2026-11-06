@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperVisual CLI"
+  short_description: "Shared CLI workflow for .hvis diagrams"
+  default_prompt: "Use $hypervis-cli to validate and render a .hvis diagram."

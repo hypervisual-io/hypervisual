@@ -1,0 +1,63 @@
+# Provider-tagged deployment map that still uses generic fallback rendering.
+
+ProviderTaggedDeployment[deployment]:
+  - Users[external-system]:
+      public: true
+  - AwsCloud[cloud]:
+      - provider: aws
+      - environment: prod
+      - Use1[region]:
+          - label: "us-east-1"
+          - ProdVpc[vpc]:
+              - provider: aws
+              - EdgeGateway[api-gateway]:
+                  provider: aws
+                  public: true
+                  badge: API
+              - Eks[cluster]:
+                  - provider: aws
+                  - platform: kubernetes
+                  - Payments[namespace]:
+                      - PaymentsSvc[service]
+                      - PaymentsApi[deployment]:
+                          image: "111122223333.dkr.ecr.us-east-1.amazonaws.com/payments:6.1.0"
+                          replicas: 5
+              - AuditTopic[topic]:
+                  provider: aws
+                  managed: true
+              - OrdersDb[database]:
+                  provider: aws
+                  managed: true
+                  encrypted: true
+  - GcpCloud[cloud]:
+      - provider: gcp
+      - AnalyticsRegion[region]:
+          - label: "europe-west1"
+          - Warehouse[database]:
+              provider: gcp
+              managed: true
+              encrypted: true
+  - Users --> EdgeGateway:
+      type: routes-to
+      protocol: HTTPS
+      port: 443
+      encrypted: true
+      direction: ingress
+  - EdgeGateway --> PaymentsSvc:
+      type: routes-to
+      protocol: HTTPS
+      encrypted: true
+  - PaymentsSvc --> PaymentsApi:
+      type: routes-to
+  - PaymentsApi --> OrdersDb:
+      type: writes-to
+      protocol: TCP
+      encrypted: true
+  - PaymentsApi --> AuditTopic:
+      type: publishes-to
+      protocol: Kafka
+      encrypted: true
+  - PaymentsApi --> Warehouse:
+      type: writes-to
+      protocol: HTTPS
+      encrypted: true

@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperVisual Unstructured"
+  short_description: "Author HyperVisual unstructured diagrams"
+  default_prompt: "Use $hypervis-unstructured to create a valid HyperVisual unstructured diagram."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperVisual Gantt"
+  short_description: "Author HyperVisual gantt diagrams"
+  default_prompt: "Use $hypervis-gantt to create a valid HyperVisual gantt diagram."

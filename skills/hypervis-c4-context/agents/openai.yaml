@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperVisual C4 Context"
+  short_description: "Author HyperVisual c4-context diagrams"
+  default_prompt: "Use $hypervis-c4-context to create a valid HyperVisual c4-context diagram."

@@ -1,0 +1,22 @@
+# HyperVisual Unstructured Vocabulary
+
+## Diagram Type
+
+```yaml
+Example[unstructured]:
+  - layout:
+      algorithm: organic
+  - Only[idea]: "labeled node"
+```
+
+## Valid Node Types
+
+- `open vocabulary; any node type annotation is accepted`
+
+## Valid Edge Types
+
+- `open vocabulary; generic arrows default to normal relationships`
+
+## Vocabulary Guidance
+
+Use the vocabulary above exactly unless this document says the type is open/permissive. When the validator is strict for this type, unknown node or edge types can fail validation.

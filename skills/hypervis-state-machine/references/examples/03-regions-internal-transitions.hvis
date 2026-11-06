@@ -1,0 +1,33 @@
+# State machine with orthogonal regions, internal transitions, and deferred events.
+
+FulfillmentRegions[state-machine]:
+  - initial --> Active
+  - Active[composite-state]:
+      regions:
+        Payment:
+          - initial --> Idle
+          - Idle[state]
+          - Capturing[state]:
+              entry_action: "start capture"
+              internal_transitions:
+                - trigger: "gatewayCallback"
+                  action: "recordGatewayState"
+              deferred:
+                - "refundRequested"
+          - Idle --> Capturing:
+              trigger: "capture"
+        Shipping:
+          - initial --> Waiting
+          - Waiting[state]
+          - Packing[state]
+          - Shipped[state]
+          - Waiting --> Packing:
+              trigger: "stockReserved"
+          - Packing --> Shipped:
+              trigger: "carrierPickup"
+      layout:
+        direction: LR
+        rank_gap: 200
+        node_gap: 72
+  - Active --> final:
+      trigger: "fulfillment complete"

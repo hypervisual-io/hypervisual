@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperVisual Threat Model"
+  short_description: "Author HyperVisual threat-model diagrams"
+  default_prompt: "Use $hypervis-threat-model to create a valid HyperVisual threat-model diagram."

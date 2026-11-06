@@ -1,0 +1,24 @@
+# Unstructured diagram with layout-only affinity groups and a dependency web.
+
+MigrationDependencies[unstructured]:
+  - layout:
+      algorithm: organic
+      rank_gap: 160
+      node_gap: 64
+  - FrontendAffinity[group]:
+      - layout_only: true
+      - LegacyWeb[app]
+      - NewWeb[app]
+  - BackendAffinity[group]:
+      - layout_only: true
+      - LegacyApi[service]
+      - NewApi[service]
+      - MigrationWorker[worker]
+  - SharedData[data-store]:
+      label: "Shared database"
+  - LegacyWeb --> LegacyApi: "current traffic"
+  - NewWeb --> NewApi: "new traffic"
+  - MigrationWorker --> SharedData: "backfills records"
+  - LegacyApi --> SharedData: "reads/writes"
+  - NewApi --> SharedData: "reads/writes"
+  - LegacyWeb <--> NewWeb: "feature parity checks"

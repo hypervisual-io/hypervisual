@@ -1,0 +1,29 @@
+name: Skill examples
+
+on:
+  push:
+    branches: [main]
+    paths: ['skills/**', 'scripts/check-skill-examples.py', 'install.sh', '.github/workflows/skills.yml']
+  pull_request:
+    paths: ['skills/**', 'scripts/check-skill-examples.py', 'install.sh', '.github/workflows/skills.yml']
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the latest released hypervis
+        run: |
+          HYPERVISUAL_INSTALL_DIR="$RUNNER_TEMP/bin" sh install.sh
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - name: Validate every skill example
+        run: python3 scripts/check-skill-examples.py --bin hypervis -v

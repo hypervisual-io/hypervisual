@@ -2,7 +2,7 @@
 
 Architecture diagrams that validate themselves. You write typed YAML (`.hvis` files); the `hypervis` CLI parses, validates, renders (SVG/PNG), diffs and scans them, and exposes the same tools to AI agents over MCP.
 
-Early preview: `.hvis` replaces the old `.codi` extension, which keeps working. The CLI's help text, the agent skills, and `hypervis test` on a folder (which only picks up `.codi`) still use the old name until the next release.
+Early preview: `.hvis` replaces the old `.codi` extension, which keeps working. In v0.1.0 the CLI's help text and `hypervis test` on a folder (which only picks up `.codi`) still use the old name.
 
 ## Install the CLI
 
@@ -36,7 +36,7 @@ hypervis help
 npx skills add hypervisual-io/hypervisual
 ```
 
-This installs `codi-cli` (shared workflow and grammar) plus one skill per diagram type (C4, sequence, class, activity, state machine, threat model, deployment, flowchart, gantt, unstructured). You can also copy the folders under [`skills/`](skills) into your agent's skills directory.
+This installs `hypervis-cli` (shared workflow and grammar) plus one skill per diagram type (C4, sequence, class, activity, state machine, threat model, deployment, flowchart, gantt, unstructured). You can also copy the folders under [`skills/`](skills) into your agent's skills directory.
 
 ## Use it over MCP
 

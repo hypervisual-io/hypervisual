@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperVisual Sequence"
+  short_description: "Author HyperVisual sequence diagrams"
+  default_prompt: "Use $hypervis-sequence to create a valid HyperVisual sequence diagram."

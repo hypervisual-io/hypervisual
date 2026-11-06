@@ -1,0 +1,44 @@
+# Unstructured diagram with shapes, colors, explicit sizes, and edge styling.
+
+IntegrationMap[unstructured]:
+  - layout:
+      direction: TB
+      rank_gap: 120
+      node_gap: 64
+  - MobileApp[client]:
+      style:
+        shape: rounded-rect
+        fill: "#fef3c7"
+        stroke: "#d97706"
+      layout:
+        width: 220
+        height: 90
+  - PublicApi[service]:
+      style:
+        shape: rect
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+  - VendorWebhook[external]:
+      style:
+        shape: hexagon
+        fill: "#f5f3ff"
+        stroke: "#7c3aed"
+  - EventQueue[queue]:
+      style:
+        shape: cylinder
+        fill: "#ecfdf5"
+        stroke: "#16a34a"
+  - MobileApp --> PublicApi:
+      label: "HTTPS"
+      style:
+        stroke: "#2563eb"
+        stroke_width: 2
+  - VendorWebhook --> PublicApi:
+      label: "signed callback"
+      style:
+        line: dashed
+        stroke: "#7c3aed"
+  - PublicApi --> EventQueue:
+      label: "publishes"
+      style:
+        stroke: "#16a34a"

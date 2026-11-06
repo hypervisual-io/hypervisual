@@ -1,0 +1,33 @@
+# Gantt chart with groups, milestones, resources, and depends_on (no arrow edges).
+
+ProductLaunch[gantt]:
+  - timeline:
+      scale: week
+      today: 2026-08-10
+  - Product[group]:
+      - DefineScope[task]:
+          start: 2026-08-03
+          end: 2026-08-07
+          resource: "Product"
+      - Signoff[milestone]:
+          date: 2026-08-08
+          depends_on:
+            - DefineScope
+  - Engineering[group]:
+      - ImplementApi[task]:
+          start: 2026-08-10
+          end: 2026-08-21
+          resource: "Backend team"
+          depends_on:
+            - DefineScope
+      - BuildUi[task]:
+          start: 2026-08-12
+          end: 2026-08-24
+          resource: "Frontend team"
+          depends_on:
+            - DefineScope
+  - GoLive[milestone]:
+      date: 2026-08-31
+      depends_on:
+        - ImplementApi
+        - BuildUi

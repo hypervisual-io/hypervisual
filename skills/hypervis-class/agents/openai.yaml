@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperVisual Class"
+  short_description: "Author HyperVisual class diagrams"
+  default_prompt: "Use $hypervis-class to create a valid HyperVisual class diagram."

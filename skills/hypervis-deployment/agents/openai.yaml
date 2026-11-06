@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperVisual Deployment"
+  short_description: "Author HyperVisual deployment diagrams"
+  default_prompt: "Use $hypervis-deployment to create a valid HyperVisual deployment diagram."
