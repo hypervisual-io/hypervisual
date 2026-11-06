@@ -25,6 +25,13 @@ async function download(url) {
   return Buffer.from(await response.arrayBuffer());
 }
 
+async function tryDownload(url) {
+  const response = await fetch(url);
+  if (response.status === 404) return null;
+  if (!response.ok) die(`download failed (${response.status}): ${url}`);
+  return Buffer.from(await response.arrayBuffer());
+}
+
 async function ensureBinary() {
   const tag = process.env.HYPERVISUAL_VERSION || `v${require("../package.json").version}`;
   const target = TARGETS[`${process.platform}/${process.arch}`];
@@ -32,14 +39,22 @@ async function ensureBinary() {
 
   const cacheRoot = process.env.XDG_CACHE_HOME || path.join(os.homedir(), ".cache");
   const dir = path.join(cacheRoot, "hypervisual", tag, target);
-  const binary = path.join(dir, "codi");
+  const binary = path.join(dir, "hypervis");
   if (fs.existsSync(binary)) return binary;
 
-  const asset = `codi-${target}.tar.gz`;
   const base = `https://github.com/${REPO}/releases/download/${tag}`;
+  const prefer = `hypervis-${target}.tar.gz`;
+  const fallback = `codi-${target}.tar.gz`;
+  let archive = await tryDownload(`${base}/${prefer}`);
+  let asset = prefer;
+  if (!archive) {
+    archive = await tryDownload(`${base}/${fallback}`);
+    asset = fallback;
+  }
+  if (!archive) die(`no release asset ${prefer} or ${fallback} for ${tag}`);
   process.stderr.write(`hypervisual: downloading ${asset} (${tag})\n`);
-  const archive = await download(`${base}/${asset}`);
-  const expected = (await download(`${base}/${asset}.sha256`)).toString("utf8").trim().split(/\s+/)[0];
+  const checksumBuf = await download(`${base}/${asset}.sha256`);
+  const expected = checksumBuf.toString("utf8").trim().split(/\s+/)[0];
   const actual = crypto.createHash("sha256").update(archive).digest("hex");
   if (expected !== actual) die(`checksum mismatch for ${asset}`);
 
@@ -50,8 +65,14 @@ async function ensureBinary() {
     fs.writeFileSync(archivePath, archive);
     const untar = spawnSync("tar", ["-xzf", archivePath, "-C", staging], { stdio: "inherit" });
     if (untar.status !== 0) die("could not extract the archive (is `tar` installed?)");
-    fs.chmodSync(path.join(staging, "codi"), 0o755);
-    fs.renameSync(path.join(staging, "codi"), binary);
+    const member = fs.existsSync(path.join(staging, "hypervis"))
+      ? "hypervis"
+      : fs.existsSync(path.join(staging, "codi"))
+        ? "codi"
+        : null;
+    if (!member) die("archive did not contain `hypervis` or `codi`");
+    fs.chmodSync(path.join(staging, member), 0o755);
+    fs.renameSync(path.join(staging, member), binary);
   } finally {
     fs.rmSync(staging, { recursive: true, force: true });
   }
