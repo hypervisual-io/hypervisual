@@ -1,8 +1,8 @@
 # HyperVisual
 
-Architecture diagrams that validate themselves. You write typed YAML (`.codi` files); the `hypervis` CLI parses, validates, renders (SVG/PNG), diffs and scans them, and exposes the same tools to AI agents over MCP.
+Architecture diagrams that validate themselves. You write typed YAML (`.hvis` files); the `hypervis` CLI parses, validates, renders (SVG/PNG), diffs and scans them, and exposes the same tools to AI agents over MCP.
 
-Early preview: the file extension is being renamed from `.codi` to `.hvis`, and the CLI's own help text still says `codi`.
+Early preview: `.hvis` replaces the old `.codi` extension, which keeps working. The CLI's help text, the agent skills, and `hypervis test` on a folder (which only picks up `.codi`) still use the old name until the next release.
 
 ## Install the CLI
 
@@ -25,8 +25,8 @@ Prebuilt for macOS arm64 and Linux x86_64/arm64 (glibc 2.28+). The script instal
 Validation runs the built-in diagram rules in Python, so `python3` 3.9+ must be on `PATH` (or set `CODI_PYTHON_PATH`).
 
 ```bash
-hypervis validate diagram.codi
-hypervis render diagram.codi --format svg -o diagram.svg
+hypervis validate diagram.hvis
+hypervis render diagram.hvis --format svg -o diagram.svg
 hypervis help
 ```
 
