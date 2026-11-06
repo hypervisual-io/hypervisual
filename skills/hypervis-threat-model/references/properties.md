@@ -43,7 +43,7 @@ Each item under any `threats:` list must be a **YAML mapping** (one object per l
 
 Put `threats:` on the diagram, on an element (any non–trust-boundary node), or on a data-flow edge. The threat then targets that element or flow unless you override the target with the fields below (required for `threats:` placed directly on the diagram).
 
-**Diagnostic codes:** validators use `HVIS-TM-…` (e.g. `HVIS-TM-022`). **hypervis v0.1.0** prints the same codes with a **`CODI-`** prefix instead of **`HVIS-`**.
+**Diagnostic codes:** validators use `HVIS-TM-…` (e.g. `HVIS-TM-022`).
 
 | Field | Required | Values / form | Meaning |
 |---|---|---|---|

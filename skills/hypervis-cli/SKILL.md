@@ -25,13 +25,13 @@ in an interactive profile may not load in a non-interactive shell.
 If it is missing, install it (no account or token needed):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hypervisual-io/hypervisual/main/install.sh | sh
+curl -fsSL https://github.com/hypervisual-io/hypervisual/releases/download/v0.2.0/install.sh | HYPERVISUAL_VERSION=v0.2.0 sh
 # or: pipx install hypervis | cargo install hypervis | npx hypervis <command>
 ```
 
 The script installs `hypervis` plus the alias `hvis` into `~/.local/bin`
 (override with `HYPERVISUAL_INSTALL_DIR`). Validators need Python 3.9+ on
-`PATH` as `python3`, or `CODI_PYTHON_PATH` pointing at one.
+`PATH` as `python3`, or `HVIS_PYTHON_PATH` pointing at one.
 
 If the CLI still cannot be run, treat it as unavailable:
 
@@ -54,12 +54,8 @@ hypervis help render
 hypervis help scan
 ```
 
-v0.1.0 naming quirks: its help text still prints `codi` as the program name and
-mentions `.codi` files, and `hypervis test <folder>` only discovers `*.codi`
-files. `validate`, `render`, and the other commands accept `.hvis` (any
-extension). Diagnostic codes (`CODI-PARSE-001`, ...), the `CODI_DIAG` output
-prefix, the `CODI_PYTHON_PATH` variable, and the MCP tool names (`codi_validate`,
-`codi_render`, ...) keep the `codi` name.
+These skills target v0.2.0 and later. v0.1.0 used the old `codi` names
+(`CODI-` codes, `codi_*` MCP tools); upgrade it.
 
 ## Grammar Essentials
 

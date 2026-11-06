@@ -6,7 +6,7 @@ diagram with a name, a type, diagram-level directives, nodes (which may nest),
 and edges.
 
 When this reference and the installed binary disagree, the binary wins: its
-`CODI-PARSE-001` messages state the current rule (for example "the 'children:'
+`HVIS-PARSE-001` messages state the current rule (for example "the 'children:'
 keyword was removed" or "'fill' must be nested under 'style:'").
 
 ## Document Shape

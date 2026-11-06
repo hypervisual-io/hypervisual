@@ -17,10 +17,7 @@ hypervis help validate
 hypervis <command> --help
 ```
 
-When these notes conflict with `hypervis help`, trust the help output. In
-v0.1.0 the help text still prints the program name as `codi` and refers to
-`.codi` files; run the commands as `hypervis`, and `.hvis` files work
-everywhere except `hypervis test <folder>` (see Test).
+When these notes conflict with `hypervis help`, trust the help output.
 
 ## Validate
 
@@ -32,7 +29,7 @@ cat diagram.hvis | hypervis validate - --source-name editor.hvis --format json
 ```
 
 Validation exits with status `1` when any diagnostic has `error` or `critical`
-severity. Text diagnostics (`CODI_DIAG ...` lines) go to stderr; JSON goes to
+severity. Text diagnostics (`HVIS_DIAG ...` lines) go to stderr; JSON goes to
 stdout. Only `validate` reads stdin (`-`); the other commands need a file path.
 
 `--type-path <file.py>` loads a custom diagram type or a validation override.
@@ -88,11 +85,11 @@ Print the canonical form:
 ```bash
 hypervis expand diagram.hvis
 hypervis expand diagram.hvis --pretty
-hypervis expand diagram.hvis --format codi
+hypervis expand diagram.hvis --format hvis
 hypervis expand custom.hvis --type-path ./custom_type.py --pretty
 ```
 
-The default is JSON; `--format codi` prints canonical YAML source. Expand
+The default is JSON; `--format hvis` prints canonical YAML source. Expand
 fails when expansion diagnostics include errors.
 
 ## Diff
@@ -116,11 +113,14 @@ hypervis test diagrams/ --test render
 hypervis test diagrams/ --update-snapshots
 ```
 
-In v0.1.0, pointing `test` at a folder only discovers `*.codi` files. Pass
-`.hvis` files individually. The runner is partial: snapshot tests render SVG
-and compare or update snapshots; some documented test forms are skipped.
+Pointing `test` at a folder runs every `*.hvis` file under it. The runner is
+partial: snapshot tests render SVG and compare or update snapshots; some
+documented test forms are skipped.
 
 ## MCP
 
-`hypervis mcp` serves the same operations over stdio for AI agents, as the tools
-`codi_validate`, `codi_render`, `codi_expand`, `codi_diff`, and `codi_scan`.
+`hypervis mcp` serves the same operations over stdio for AI agents as the MCP
+server `hvis`, with the tools `hvis_validate`, `hvis_render`, `hvis_expand`,
+`hvis_diff`, and `hvis_scan`. They take diagram text rather than a file path
+(`source`, or `old_source`/`new_source` for diff); `hvis_scan` takes an
+absolute directory path or GitHub URL as `source`.

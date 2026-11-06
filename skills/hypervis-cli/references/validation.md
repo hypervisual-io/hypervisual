@@ -17,10 +17,10 @@ cat diagram.hvis | hypervis validate - --source-name editor.hvis --format json
 
 ## Diagnostic Shape
 
-Text output prints one `CODI_DIAG` line per diagnostic to stderr, for example:
+Text output prints one `HVIS_DIAG` line per diagnostic to stderr, for example:
 
 ```text
-CODI_DIAG validator=default:class severity=warning code=CODI-CLS-PY-140 file=domain.hvis line=3 column=5 path=PaymentPort point="PaymentPort" description="interface 'PaymentPort' has no public members"
+HVIS_DIAG validator=default:class severity=warning code=HVIS-CLS-PY-140 file=domain.hvis line=3 column=5 path=PaymentPort point="PaymentPort" description="interface 'PaymentPort' has no public members"
 ```
 
 JSON output (`--format json`) is a list of objects with `severity`, `code`,
@@ -35,11 +35,11 @@ Severities are `critical`, `error`, `warning`, and `info`. `critical` and
 
 | Code | Meaning |
 |---|---|
-| `CODI-IO-001` | Source file or stdin could not be read |
-| `CODI-PARSE-001` | YAML or grammar error; the description states the rule |
-| `CODI-VALIDATOR-TYPE-001` | No built-in validator for the diagram type and no `--type-path` |
-| `CODI-VALIDATOR-PATH-001` | `--type-path` file could not be loaded |
-| `CODI-VALIDATOR-RUNTIME-001` | Python validator failed at runtime |
+| `HVIS-IO-001` | Source file or stdin could not be read |
+| `HVIS-PARSE-001` | YAML or grammar error; the description states the rule |
+| `HVIS-VALIDATOR-TYPE-001` | No built-in validator for the diagram type and no `--type-path` |
+| `HVIS-VALIDATOR-PATH-001` | `--type-path` file could not be loaded |
+| `HVIS-VALIDATOR-RUNTIME-001` | Python validator failed at runtime |
 
 Parse errors have no line number. Read the description, which names the node
 and the fix, for example:
@@ -51,7 +51,7 @@ and the fix, for example:
 - `gantt does not use arrow edges; declare dependencies with 'depends_on:' on the task`
 
 Validators run in Python: they need Python 3.9+ as `python3` on `PATH`, or
-`CODI_PYTHON_PATH` pointing at an interpreter.
+`HVIS_PYTHON_PATH` pointing at an interpreter.
 
 ## Source Mapping
 
