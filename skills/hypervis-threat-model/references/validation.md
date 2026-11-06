@@ -21,6 +21,28 @@
 
 Use `hypervis validate <file> --strict` when producing best-practice examples or documentation diagrams. Strict mode may promote supported convention warnings.
 
+## Threat entry diagnostics
+
+Codes are `HVIS-TM-…` in current tooling; **hypervis v0.1.0** prints them as **`CODI-TM-…`**.
+
+| Code | Severity | When |
+|---|---|---|
+| HVIS-TM-021 | critical | `threats` is not a list |
+| HVIS-TM-022 | critical | threat item is not a mapping |
+| HVIS-TM-023 | critical | unsupported `category` |
+| HVIS-TM-024 | critical | missing `category` |
+| HVIS-TM-025 | warning | unsupported `severity` |
+| HVIS-TM-026 | warning | missing `severity` |
+| HVIS-TM-027 | warning | `mitigated` without `mitigation` |
+| HVIS-TM-028 | warning | unsupported `status` |
+| HVIS-TM-029 | warning | missing `status` |
+| HVIS-TM-030 | warning | `accepted` without `rationale` or `acceptance-rationale` |
+| HVIS-TM-031 | warning | duplicate authored threat for same target and category |
+| HVIS-TM-032 | critical | top-level threat references unknown element |
+| HVIS-TM-033 | critical | top-level threat references unknown flow or `flow_id` |
+| HVIS-TM-034 | critical | top-level threat missing target fields |
+| HVIS-TM-072 | critical | top-level `from`/`to` matches multiple flows; use `flow_id` |
+
 ## Common Repairs
 
 - Add missing node declarations for edge endpoints.

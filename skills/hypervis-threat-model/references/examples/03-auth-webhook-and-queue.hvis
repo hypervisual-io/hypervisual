@@ -14,6 +14,18 @@ WebhookThreats[threat-model]:
   - AppTier[trust-boundary]:
       - WebhookApi[process]:
           controls: ["signature verification", "idempotency key"]
+          threats:
+            - category: tampering
+              severity: high
+              status: open
+              title: "Replayed webhook payloads"
+              description: "An attacker could replay captured signed requests before expiry."
+            - category: elevation-of-privilege
+              severity: medium
+              status: accepted
+              title: "Residual trust in partner identity"
+              description: "A compromised partner account could publish malicious events."
+              rationale: "Accepted with contractual monitoring, key rotation, and provider audit rights."
       - EventQueue[data-store]:
           encrypted: true
   - UserBrowser --> AuthProxy:
@@ -24,6 +36,13 @@ WebhookThreats[threat-model]:
       label: "HTTPS signed webhook"
       encrypted: true
       authenticated: false
+      threats:
+        - category: spoofing
+          severity: medium
+          status: mitigated
+          title: "Spoofed webhook origin"
+          description: "Caller may impersonate the partner."
+          mitigation: "HMAC signatures and static partner allowlists."
   - Waf --> WebhookApi:
       label: "Forwards verified request"
       encrypted: true

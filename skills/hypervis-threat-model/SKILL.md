@@ -22,7 +22,7 @@ This skill assumes the `hypervis-cli` skill is installed. Use `hypervis-cli` for
 ## Authoring Workflow
 
 1. Read `references/authoring.md` for diagram selection and common patterns.
-2. Read `references/vocabulary.md` and `references/properties.md` before writing detailed nodes or edges.
+2. Read `references/vocabulary.md` and `references/properties.md` before writing detailed nodes or edges (including **Threat entries** under `threats:`).
 3. Use examples from `references/examples/` as source templates.
 4. Validate with `hypervis validate <file>`.
 5. Render with `hypervis render <file> --format svg -o <file.svg>` when the CLI is available.
