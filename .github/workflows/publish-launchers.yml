@@ -1,0 +1,393 @@
+name: Publish launchers
+
+# Publishes the launcher packages in packages/ (npm `hypervis`, PyPI
+# `hypervisual` and `hypervis`, crates.io `hypervisual` and `hypervis`) for a
+# published vX.Y.Z release. Each launcher downloads the release tagged
+# v<its version>, so the version is set from the tag here and every launcher is
+# smoke-tested against the release assets before anything is published.
+#
+# Registries trust this file by name (trusted publishing, no stored tokens):
+# renaming it, or moving a publish job into a reusable workflow, breaks
+# publishing until each registry's trusted publisher is updated. See
+# RELEASING.md.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Published release tag to publish launchers for, e.g. v0.2.0"
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: publish-launchers-${{ github.event.release.tag_name || inputs.version }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  TAG: ${{ github.event.release.tag_name || inputs.version }}
+
+jobs:
+  prepare:
+    name: Check release
+    if: github.event_name == 'workflow_dispatch' || !github.event.release.prerelease
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      publish: ${{ steps.check.outputs.publish }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Check tag and release assets
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [[ ! "$TAG" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            if [ "$GITHUB_EVENT_NAME" = release ]; then
+              echo "::notice::$TAG is not a vX.Y.Z tag; not publishing launchers for it"
+              echo "publish=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "::error::version must look like v1.2.3, got '$TAG'"
+            exit 1
+          fi
+          version="${BASH_REMATCH[1]}"
+
+          if ! release="$(gh release view "$TAG" --json isDraft,isPrerelease,assets)"; then
+            echo "::error::no published release $TAG in $GH_REPO"
+            exit 1
+          fi
+          if [ "$(jq -r .isDraft <<<"$release")" = true ]; then
+            echo "::error::release $TAG is still a draft; publish it first"
+            exit 1
+          fi
+          if [ "$(jq -r .isPrerelease <<<"$release")" = true ]; then
+            echo "::error::release $TAG is a prerelease; launchers are only published for full releases"
+            exit 1
+          fi
+
+          # Same asset names the launchers try, in the same order.
+          assets="$(jq -r '.assets[].name' <<<"$release")"
+          for target in x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu aarch64-apple-darwin; do
+            found=
+            for prefix in hypervis codi; do
+              if grep -qxF "$prefix-$target.tar.gz" <<<"$assets" && grep -qxF "$prefix-$target.tar.gz.sha256" <<<"$assets"; then
+                found="$prefix-$target.tar.gz"
+                break
+              fi
+            done
+            if [ -z "$found" ]; then
+              echo "::error::release $TAG has no hypervis-$target.tar.gz with its .sha256"
+              exit 1
+            fi
+            echo "$target: $found"
+          done
+
+          {
+            echo "publish=true"
+            echo "version=$version"
+          } >> "$GITHUB_OUTPUT"
+          echo "Publishing launchers $version for release $TAG"
+
+  build:
+    name: Build packages
+    needs: prepare
+    if: needs.prepare.outputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Set launcher versions
+        run: python3 scripts/set-launcher-version.py "$VERSION"
+
+      - name: Pack npm package
+        working-directory: packages/npm
+        run: |
+          node --check bin/hypervis.js
+          mkdir -p "$GITHUB_WORKSPACE/dist/npm"
+          npm pack --pack-destination "$GITHUB_WORKSPACE/dist/npm"
+
+      - name: Build Python packages
+        run: |
+          python3 -m venv "$RUNNER_TEMP/build-venv"
+          "$RUNNER_TEMP/build-venv/bin/pip" install --quiet build==1.6.1 twine==7.0.0
+          for package in pypi pypi-hypervis; do
+            "$RUNNER_TEMP/build-venv/bin/python" -m build "packages/$package" --outdir dist/pypi
+          done
+          "$RUNNER_TEMP/build-venv/bin/twine" check --strict dist/pypi/*
+
+      - name: Package crates
+        working-directory: packages
+        run: |
+          cargo --version
+          cargo package --workspace --locked --allow-dirty
+
+      - name: Check package files
+        working-directory: dist
+        run: |
+          for f in \
+            "npm/hypervis-$VERSION.tgz" \
+            "pypi/hypervisual-$VERSION-py3-none-any.whl" \
+            "pypi/hypervisual-$VERSION.tar.gz" \
+            "pypi/hypervis-$VERSION-py3-none-any.whl" \
+            "pypi/hypervis-$VERSION.tar.gz"; do
+            [ -f "$f" ] || { echo "::error::missing $f"; ls -R; exit 1; }
+          done
+          ls -lR
+
+      - name: Upload packages
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: launchers
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  smoke:
+    name: Smoke test (${{ matrix.runner }})
+    needs: [prepare, build]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download packages
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: launchers
+          path: dist
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Set launcher versions
+        run: python3 scripts/set-launcher-version.py "$VERSION"
+
+      - name: Install Rust
+        run: |
+          if ! command -v cargo >/dev/null 2>&1; then
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+            echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          fi
+
+      - name: Run every launcher against the release
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+        run: |
+          unset HYPERVISUAL_VERSION
+          # Separate caches, so every launcher downloads and verifies the release asset itself.
+          check() {
+            local label="$1" out log="$RUNNER_TEMP/$1.stderr"
+            shift
+            if ! out="$(XDG_CACHE_HOME="$RUNNER_TEMP/cache/$label" "$@" --version 2>"$log")"; then
+              cat "$log"
+              echo "::error::$label: --version failed"
+              exit 1
+            fi
+            cat "$log"
+            echo "$label: $out"
+            if ! grep -qF "($TAG)" "$log"; then
+              echo "::error::$label did not download release $TAG"
+              exit 1
+            fi
+            case "$out" in
+              *"$VERSION"*) ;;
+              *) echo "::error::$label: --version printed '$out', expected $VERSION"; exit 1 ;;
+            esac
+          }
+
+          echo "::group::npm"
+          mkdir -p "$RUNNER_TEMP/npx"
+          cd "$RUNNER_TEMP/npx"
+          check npm-hypervis npm exec --yes --package="$GITHUB_WORKSPACE/dist/npm/hypervis-$VERSION.tgz" -- hypervis
+          cd "$GITHUB_WORKSPACE"
+          echo "::endgroup::"
+
+          echo "::group::PyPI"
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet --no-index dist/pypi/*.whl
+          check pypi-hypervisual "$RUNNER_TEMP/venv/bin/hypervisual"
+          check pypi-hypervis "$RUNNER_TEMP/venv/bin/hypervis"
+          echo "::endgroup::"
+
+          echo "::group::crates.io"
+          for crate in crate crate-hypervis; do
+            cargo install --quiet --locked --path "packages/$crate" --root "$RUNNER_TEMP/cargo"
+          done
+          check crate-hypervisual "$RUNNER_TEMP/cargo/bin/hypervisual"
+          check crate-hypervis "$RUNNER_TEMP/cargo/bin/hypervis"
+          echo "::endgroup::"
+
+  npm:
+    name: Publish to npm
+    needs: [prepare, smoke]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/hypervis/v/${{ needs.prepare.outputs.version }}
+    permissions:
+      id-token: write
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Download packages
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: launchers
+          path: dist
+
+      - name: Publish hypervis
+        run: |
+          npm_version="$(npm --version)"
+          if [ "$(printf '%s\n' 11.5.1 "$npm_version" | sort -V | head -n 1)" != 11.5.1 ]; then
+            echo "::error::trusted publishing needs npm 11.5.1 or later, got $npm_version"
+            exit 1
+          fi
+
+          status="$(curl -sS -o /dev/null -w '%{http_code}' "https://registry.npmjs.org/hypervis/$VERSION")"
+          case "$status" in
+            200) echo "::notice::hypervis@$VERSION is already on npm; skipping"; exit 0 ;;
+            404) ;;
+            *) echo "::error::npm registry returned HTTP $status for hypervis@$VERSION"; exit 1 ;;
+          esac
+
+          # npm moves `latest` to whatever is published; keep it on the highest version.
+          latest="$(curl -fsS https://registry.npmjs.org/-/package/hypervis/dist-tags | jq -r '.latest // empty')"
+          tag=latest
+          if [ -n "$latest" ] && [ "$(printf '%s\n' "$latest" "$VERSION" | sort -V | tail -n 1)" != "$VERSION" ]; then
+            tag=backfill
+          fi
+          npm publish "dist/npm/hypervis-$VERSION.tgz" --provenance --access public --tag "$tag"
+
+  pypi:
+    name: Publish to PyPI
+    needs: [prepare, smoke]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: pypi
+      url: https://pypi.org/project/hypervisual/${{ needs.prepare.outputs.version }}/
+    permissions:
+      id-token: write
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: launchers
+          path: dist
+
+      - name: Publish hypervisual and hypervis
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
+        with:
+          packages-dir: dist/pypi/
+          skip-existing: true
+
+  crates:
+    name: Publish to crates.io
+    needs: [prepare, smoke]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment:
+      name: crates
+      url: https://crates.io/crates/hypervisual/${{ needs.prepare.outputs.version }}
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set launcher versions
+        run: python3 scripts/set-launcher-version.py "$VERSION"
+
+      - name: Find crates to publish
+        id: pending
+        run: |
+          packages=()
+          for crate in hypervisual hypervis; do
+            status="$(curl -sS -o /dev/null -w '%{http_code}' \
+              -A "$GITHUB_REPOSITORY publish-launchers ($GITHUB_SERVER_URL/$GITHUB_REPOSITORY)" \
+              "https://crates.io/api/v1/crates/$crate/$VERSION")"
+            case "$status" in
+              200) echo "::notice::$crate $VERSION is already on crates.io; skipping" ;;
+              404) packages+=(-p "$crate") ;;
+              *) echo "::error::crates.io returned HTTP $status for $crate $VERSION"; exit 1 ;;
+            esac
+          done
+          echo "packages=${packages[*]}" >> "$GITHUB_OUTPUT"
+
+      - name: Get a crates.io token
+        id: auth
+        if: steps.pending.outputs.packages != ''
+        uses: rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9 # v1.0.6
+
+      - name: Publish
+        if: steps.pending.outputs.packages != ''
+        working-directory: packages
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+          PACKAGES: ${{ steps.pending.outputs.packages }}
+        run: |
+          # --allow-dirty: the version was set in this checkout, not committed.
+          # shellcheck disable=SC2086
+          cargo publish --locked --allow-dirty $PACKAGES
