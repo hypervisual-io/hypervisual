@@ -31,7 +31,7 @@ def examples(base):
                 block, lang, start = [], m.group(1), n
             elif block is not None and line.startswith("```"):
                 body = [l for l in block if l.strip() and not l.lstrip().startswith("#")]
-                if lang in ("yaml", "hvis", "codi", "") and body and DECLARATION.match(body[0]):
+                if lang in ("yaml", "hvis", "") and body and DECLARATION.match(body[0]):
                     yield md.relative_to(ROOT), start, "\n".join(block) + "\n"
                 block = None
             elif block is not None:

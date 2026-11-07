@@ -23,8 +23,6 @@ Use `hypervis validate <file> --strict` when producing best-practice examples or
 
 ## Threat entry diagnostics
 
-Codes are `HVIS-TM-…` in current tooling; **hypervis v0.1.0** prints them as **`CODI-TM-…`**.
-
 | Code | Severity | When |
 |---|---|---|
 | HVIS-TM-021 | critical | `threats` is not a list |

@@ -159,7 +159,8 @@ text-diffable.
 
 ## PNG Rendering
 
-PNG output rasterizes SVG:
+`render` writes SVG unless `--format png` is given or `-o` ends in `.png`. PNG
+output rasterizes SVG:
 
 ```bash
 hypervis render diagram.hvis --format png -o diagram.png
@@ -171,6 +172,21 @@ PNG is best for screenshots, release artifacts, and documents that cannot embed
 SVG. `--raster-scale` applies only to non-exact PNG output; exact PNG output
 from `--size`, `--width --height`, or ratio-computed dimensions already defines
 the final pixel size. `--max-raster-dimension 0` disables the PNG dimension cap.
+
+PNG text uses installed fonts, falling back to the bundled Space Grotesk and
+JetBrains Mono (Latin, Cyrillic, Greek). If some text still cannot be drawn
+(for example CJK on a host without CJK fonts), the render fails with
+`HVIS-RENDER-FONT-001` (no font matches the family) or `HVIS-RENDER-FONT-002`
+(no font has the listed characters), exits `1`, and writes no PNG. Render SVG,
+which keeps the text, or install a covering font. Set `HVIS_PNG_SYSTEM_FONTS=0`
+to render with the bundled fonts only, for output that does not depend on the
+host.
+
+## Render Warnings
+
+`HVIS-LAYOUT-001` warns that a container title (group, lane, trust boundary,
+region, or sequence fragment) is wider than groups widen for and was
+truncated. It is reported only by `render`; shorten the label.
 
 ## Focus Rendering
 

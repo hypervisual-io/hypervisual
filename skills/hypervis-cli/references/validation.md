@@ -17,15 +17,17 @@ cat diagram.hvis | hypervis validate - --source-name editor.hvis --format json
 
 ## Diagnostic Shape
 
-Text output prints one `CODI_DIAG` line per diagnostic to stderr, for example:
+Text output prints one `HVIS_DIAG` line per diagnostic to stderr, for example:
 
 ```text
-CODI_DIAG validator=default:class severity=warning code=CODI-CLS-PY-140 file=domain.hvis line=3 column=5 path=PaymentPort point="PaymentPort" description="interface 'PaymentPort' has no public members"
+HVIS_DIAG validator=default:class severity=warning code=HVIS-CLS-PY-140 file=domain.hvis line=3 column=5 path=PaymentPort point="PaymentPort" description="interface 'PaymentPort' has no public members"
 ```
 
 JSON output (`--format json`) is a list of objects with `severity`, `code`,
-`message`/`description`, `validator`, `file`, `line`, `column`, `path`,
-`point`, `node`, `edge`, `member`, and `doc_url`.
+`message`/`description`, `validator`, `file`, `line`, `column`, `end_line`,
+`end_column`, `hint`, `path`, `point`, `node`, `edge`, `member`, and
+`doc_url`. `line` and `column` are 1-based; `end_line`/`end_column` (end
+exclusive) and `hint` are `null` when unknown.
 
 Severities are `critical`, `error`, `warning`, and `info`. `critical` and
 `error` fail validation (exit `1`); `warning` and `info` do not, unless
@@ -35,14 +37,29 @@ Severities are `critical`, `error`, `warning`, and `info`. `critical` and
 
 | Code | Meaning |
 |---|---|
-| `CODI-IO-001` | Source file or stdin could not be read |
-| `CODI-PARSE-001` | YAML or grammar error; the description states the rule |
-| `CODI-VALIDATOR-TYPE-001` | No built-in validator for the diagram type and no `--type-path` |
-| `CODI-VALIDATOR-PATH-001` | `--type-path` file could not be loaded |
-| `CODI-VALIDATOR-RUNTIME-001` | Python validator failed at runtime |
+| `HVIS-IO-001` | Source file or stdin could not be read |
+| `HVIS-PARSE-001` | YAML or grammar error; the description states the rule |
+| `HVIS-VALIDATOR-TYPE-001` | No built-in validator for the diagram type and no `--type-path` |
+| `HVIS-VALIDATOR-PATH-001` | `--type-path` file could not be loaded |
+| `HVIS-VALIDATOR-RUNTIME-001` | Python validator failed at runtime |
 
-Parse errors have no line number. Read the description, which names the node
-and the fix, for example:
+Parse errors always carry a location: the YAML error position, or the
+offending key or item, falling back to the enclosing node or the diagram
+declaration. Parsing stops at the first error. Text output repeats it after
+the `HVIS_DIAG` line as a readable block (also on stderr) with the source
+excerpt, a caret under the span, and the hint when there is one:
+
+```text
+critical[HVIS-PARSE-001]: Failed to parse YAML: found unexpected end of stream at line 4 column 1, while scanning a quoted scalar at line 2 column 20
+ --> quote.hvis:3:17
+  |
+2 |   - Cart[process]: "unclosed
+3 |   - Pay[process]
+  |                 ^
+  = hint: the quoted string opened at line 2, column 20 is never closed; add the closing quote
+```
+
+The description names the rule, for example:
 
 - `the 'children:' keyword was removed; nest child nodes directly as list items`
 - `diagram-level 'direction' must be nested under the 'layout:' directive`
@@ -51,7 +68,21 @@ and the fix, for example:
 - `gantt does not use arrow edges; declare dependencies with 'depends_on:' on the task`
 
 Validators run in Python: they need Python 3.9+ as `python3` on `PATH`, or
-`CODI_PYTHON_PATH` pointing at an interpreter.
+`HVIS_PYTHON_PATH` pointing at an interpreter.
+
+## Render Diagnostics
+
+`hypervis render` reports these after validation passes; `validate` does not.
+
+| Code | Severity | Meaning |
+|---|---|---|
+| `HVIS-LAYOUT-001` | warning | A group, lane, boundary, or fragment title is wider than groups grow for, so it is truncated; shorten the label |
+| `HVIS-RENDER-FONT-001` | error | PNG only: no available font matches the text's font family |
+| `HVIS-RENDER-FONT-002` | error | PNG only: no available font has glyphs for some characters (listed) |
+
+On a font error no PNG is written. Render SVG, which keeps the text, or install
+a font that covers it. See
+[rendering-and-scaling.md](./rendering-and-scaling.md#png-rendering).
 
 ## Source Mapping
 

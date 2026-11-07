@@ -5,7 +5,7 @@ file="${1:?usage: hypervis-validate-render.sh <file.hvis> [output.svg]}"
 output="${2:-${file%.*}.svg}"
 
 bin=""
-for candidate in hypervis hvis codi; do
+for candidate in hypervis hvis; do
   if command -v "$candidate" >/dev/null 2>&1; then
     bin="$candidate"
     break

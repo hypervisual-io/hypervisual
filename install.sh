@@ -85,9 +85,9 @@ case ":$PATH:" in
   *) say "note: $INSTALL_DIR is not on PATH; add it, e.g. export PATH=\"$INSTALL_DIR:\$PATH\"" ;;
 esac
 
-py="${CODI_PYTHON_PATH:-python3}"
+py="${HVIS_PYTHON_PATH:-python3}"
 if ! "$py" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)' >/dev/null 2>&1; then
-  say "note: validation needs Python 3.9+ as python3 (or set CODI_PYTHON_PATH)"
+  say "note: validation needs Python 3.9+ as python3 (or set HVIS_PYTHON_PATH)"
 fi
 
 say "warning: this installer does not update hypervis. Re-run it to get a newer"

@@ -20,18 +20,19 @@ scripts/hypervis-doctor.sh
 ```
 
 `command -v` also matches shell aliases and functions, but aliases defined only
-in an interactive profile may not load in a non-interactive shell.
+in an interactive profile may not load in a non-interactive shell. The doctor
+script also prints `hypervis --version`.
 
 If it is missing, install it (no account or token needed):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hypervisual-io/hypervisual/main/install.sh | sh
+curl -fsSL https://github.com/hypervisual-io/hypervisual/releases/download/v0.2.0/install.sh | HYPERVISUAL_VERSION=v0.2.0 sh
 # or: pipx install hypervis | cargo install hypervis | npx hypervis <command>
 ```
 
 The script installs `hypervis` plus the alias `hvis` into `~/.local/bin`
 (override with `HYPERVISUAL_INSTALL_DIR`). Validators need Python 3.9+ on
-`PATH` as `python3`, or `CODI_PYTHON_PATH` pointing at one.
+`PATH` as `python3`, or `HVIS_PYTHON_PATH` pointing at one.
 
 If the CLI still cannot be run, treat it as unavailable:
 
@@ -54,12 +55,10 @@ hypervis help render
 hypervis help scan
 ```
 
-v0.1.0 naming quirks: its help text still prints `codi` as the program name and
-mentions `.codi` files, and `hypervis test <folder>` only discovers `*.codi`
-files. `validate`, `render`, and the other commands accept `.hvis` (any
-extension). Diagnostic codes (`CODI-PARSE-001`, ...), the `CODI_DIAG` output
-prefix, the `CODI_PYTHON_PATH` variable, and the MCP tool names (`codi_validate`,
-`codi_render`, ...) keep the `codi` name.
+These skills target v0.2.0 and later. Check with `hypervis --version`
+(`hypervis version --json` for scripts) and record it next to generated
+output. v0.1.0 has no `--version` and uses the old `codi` names (`CODI-`
+codes, `codi_*` MCP tools); upgrade it.
 
 ## Grammar Essentials
 
@@ -97,9 +96,14 @@ Checkout[flowchart]:
 
 1. Write or edit `.hvis` source using a diagram-specific skill.
 2. Run `hypervis validate <file>`.
-3. Fix `error` and `critical` diagnostics; parse errors name the rule and fix.
+3. Fix `error` and `critical` diagnostics. Parse errors give the line and
+   column, a source excerpt with a caret, and a `hint` when one is known; only
+   the first parse error is reported, so re-run after each fix.
 4. Render with `hypervis render <file> --format svg -o <file.svg>`, or run
-   `scripts/hypervis-validate-render.sh <file.hvis>`.
+   `scripts/hypervis-validate-render.sh <file.hvis>`. Shorten any group title
+   that render flags with `HVIS-LAYOUT-001` (truncated title).
 
-`render` defaults to PNG, so pass `--format svg` for docs and review. Use PNG
-only when requested or required by a target system.
+`render` writes SVG unless `--format png` is given or `-o` ends in `.png`. Use
+PNG only when requested or required by a target system. A PNG render whose text
+no available font can draw fails with `HVIS-RENDER-FONT-001`/`-002` and writes
+no file; render SVG instead, or install a font that covers the text.
