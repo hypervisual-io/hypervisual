@@ -2,10 +2,12 @@
 # HyperVisual CLI installer: downloads the release binary from GitHub Releases
 # and installs it as `hypervis`, with `hvis` as a short alias. It does not
 # update an existing install.
-#   curl -fsSL https://raw.githubusercontent.com/hypervisual-io/hypervisual/main/install.sh | sh
+#   curl -fsSL https://github.com/hypervisual-io/hypervisual/releases/download/v0.2.0/install.sh | HYPERVISUAL_VERSION=v0.2.0 sh
 # Environment:
 #   HYPERVISUAL_VERSION      release tag to install (default: latest)
 #   HYPERVISUAL_INSTALL_DIR  target directory (default: $HOME/.local/bin)
+#   HYPERVISUAL_VERIFY_ATTESTATION=1  also verify the archive's build attestation
+#                            with `gh attestation verify` (needs gh, logged in; v0.2.0+)
 set -eu
 
 REPO="hypervisual-io/hypervisual"
@@ -61,6 +63,13 @@ else
   die "sha256sum or shasum is required to verify the download"
 fi
 [ "$expected" = "$actual" ] || die "checksum mismatch for $asset"
+
+if [ "${HYPERVISUAL_VERIFY_ATTESTATION:-}" = 1 ]; then
+  command -v gh >/dev/null 2>&1 || die "HYPERVISUAL_VERIFY_ATTESTATION=1 needs the GitHub CLI (gh)"
+  gh attestation verify "$tmp/$asset" --repo "$REPO" >/dev/null \
+    || die "attestation verification failed for $asset (releases before v0.2.0 have none)"
+  say "verified build attestation for $asset"
+fi
 
 mkdir "$tmp/x"
 tar -xzf "$tmp/$asset" -C "$tmp/x"
