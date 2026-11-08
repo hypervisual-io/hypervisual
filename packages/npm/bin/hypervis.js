@@ -19,14 +19,43 @@ function die(message) {
   process.exit(1);
 }
 
+const DOWNLOAD_MAX_ATTEMPTS = 5;
+
+async function fetchWithRetry(url) {
+  let delay = 1000;
+  for (let attempt = 0; attempt < DOWNLOAD_MAX_ATTEMPTS; attempt++) {
+    let response;
+    try {
+      response = await fetch(url);
+    } catch (error) {
+      if (attempt === DOWNLOAD_MAX_ATTEMPTS - 1) die(error.message);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      delay *= 2;
+      continue;
+    }
+    if (response.status === 404) return response;
+    if (response.status === 429 || response.status >= 500) {
+      if (attempt === DOWNLOAD_MAX_ATTEMPTS - 1) {
+        die(`download failed (${response.status}): ${url}`);
+      }
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      delay *= 2;
+      continue;
+    }
+    if (!response.ok) die(`download failed (${response.status}): ${url}`);
+    return response;
+  }
+  die(`download failed: ${url}`);
+}
+
 async function download(url) {
-  const response = await fetch(url);
+  const response = await fetchWithRetry(url);
   if (!response.ok) die(`download failed (${response.status}): ${url}`);
   return Buffer.from(await response.arrayBuffer());
 }
 
 async function tryDownload(url) {
-  const response = await fetch(url);
+  const response = await fetchWithRetry(url);
   if (response.status === 404) return null;
   if (!response.ok) die(`download failed (${response.status}): ${url}`);
   return Buffer.from(await response.arrayBuffer());

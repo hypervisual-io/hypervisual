@@ -39,7 +39,20 @@ fn command(program: &str, args: &[&str]) -> String {
 
 fn try_curl_to_file(url: &str, dest: &str) -> bool {
     let output = Command::new("curl")
-        .args(["-sS", "-L", "-o", dest, "-w", "%{http_code}", url])
+        .args([
+            "--retry",
+            "4",
+            "--retry-delay",
+            "2",
+            "--retry-connrefused",
+            "-sS",
+            "-L",
+            "-o",
+            dest,
+            "-w",
+            "%{http_code}",
+            url,
+        ])
         .output()
         .unwrap_or_else(|error| die(&format!("could not run `curl`: {error}")));
     if !output.status.success() {
@@ -127,7 +140,18 @@ fn ensure_binary() -> PathBuf {
 
     eprintln!("hypervisual: downloading {asset} ({tag})");
     let sha_url = format!("{base}/{asset}.sha256");
-    let expected = command("curl", &["-fsSL", &sha_url]);
+    let expected = command(
+        "curl",
+        &[
+            "--retry",
+            "4",
+            "--retry-delay",
+            "2",
+            "--retry-connrefused",
+            "-fsSL",
+            &sha_url,
+        ],
+    );
     let expected = expected.split_whitespace().next().unwrap_or_default();
     if sha256(&archive) != expected {
         let _ = fs::remove_dir_all(&staging);
