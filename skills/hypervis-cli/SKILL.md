@@ -26,7 +26,7 @@ script also prints `hypervis --version`.
 If it is missing, install it (no account or token needed):
 
 ```bash
-curl -fsSL https://github.com/hypervisual-io/hypervisual/releases/download/v0.2.0/install.sh | HYPERVISUAL_VERSION=v0.2.0 sh
+curl -fsSL https://github.com/hypervisual-io/hypervisual/releases/download/v0.2.1/install.sh | HYPERVISUAL_VERSION=v0.2.1 sh
 # or: pipx install hypervis | cargo install hypervis | npx hypervis <command>
 ```
 
@@ -55,7 +55,7 @@ hypervis help render
 hypervis help scan
 ```
 
-These skills target v0.2.0 and later. Check with `hypervis --version`
+These skills target v0.2.1 and later. Check with `hypervis --version`
 (`hypervis version --json` for scripts) and record it next to generated
 output. v0.1.0 has no `--version` and uses the old `codi` names (`CODI-`
 codes, `codi_*` MCP tools); upgrade it.
@@ -91,6 +91,8 @@ Checkout[flowchart]:
 - Per-type vocabulary and examples: `references/diagram-types.md`
 - Validation and diagnostics: `references/validation.md`
 - Rendering, sizing, themes, and PNG/SVG: `references/rendering-and-scaling.md`
+- Path overlays (highlight/dim): `references/overlays.md`
+- Stable SVG ids and CSS hooks: `references/svg-structure.md`
 
 ## Validation Loop
 

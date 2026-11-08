@@ -1,0 +1,37 @@
+# C4 container diagram with a PCI payment-path overlay (see hypervis-cli references/overlays.md).
+
+CheckoutPlatform[c4-container]:
+  - Shopper[person]: "Browses and pays for products"
+  - CheckoutPlatform[software-system]:
+      scope: true
+      description: "Online store"
+  - CheckoutBoundary[system-boundary]:
+      - label: "Checkout Platform"
+      - WebApp[container]:
+          technology: "React"
+          description: "Storefront and checkout"
+      - CheckoutApi[container]:
+          technology: "Rust API"
+          description: "Orders and payments"
+      - CheckoutDb[database]:
+          technology: "PostgreSQL"
+          description: "Orders"
+  - PaymentGateway[external-software-system]: "Card authorization network"
+  - Shopper --> WebApp: "Browses and checks out"
+  - WebApp --> CheckoutApi:
+      label: "Submits cart and card token"
+      protocol: "HTTPS/JSON"
+  - CheckoutApi --> CheckoutDb:
+      label: "Reads and writes orders"
+      protocol: "SQL"
+  - CheckoutApi --> PaymentGateway:
+      label: "Requests card authorization"
+      protocol: "HTTPS"
+overlay:
+  PaymentPath:
+    path:
+      - Shopper
+      - WebApp
+      - CheckoutApi
+      - PaymentGateway
+    note: "PCI DSS scope"

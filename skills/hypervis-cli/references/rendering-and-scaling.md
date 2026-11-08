@@ -142,7 +142,12 @@ markers, boundaries, and diff accents.
 
 ## SVG Rendering
 
-SVG is generated from the render scene. The SVG renderer handles:
+SVG is generated from the render scene. Each node and edge is a `<g>` with
+stable ids (`node-<Name>`, `edge-<From>--<To>`), classes, and `data-hvis-*`
+attributes; use `--svg-id-prefix` when inlining several diagrams. See
+[svg-structure.md](./svg-structure.md).
+
+The SVG renderer handles:
 
 - root viewport and background
 - node shapes

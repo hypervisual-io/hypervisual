@@ -15,7 +15,7 @@ cargo install hypervis
 Or with the install script attached to a release (v0.2.0 and later), which does not update an existing install (re-run it for a newer release):
 
 ```bash
-curl -fsSL https://github.com/hypervisual-io/hypervisual/releases/download/v0.2.0/install.sh | HYPERVISUAL_VERSION=v0.2.0 sh
+curl -fsSL https://github.com/hypervisual-io/hypervisual/releases/download/v0.2.1/install.sh | HYPERVISUAL_VERSION=v0.2.1 sh
 ```
 
 Prebuilt for macOS arm64 and Linux x86_64/arm64 (glibc 2.28+). The script installs `hypervis` and the short alias `hvis` to `~/.local/bin`; set `HYPERVISUAL_INSTALL_DIR` to change the location. Binaries are also attached to each [release](https://github.com/hypervisual-io/hypervisual/releases).

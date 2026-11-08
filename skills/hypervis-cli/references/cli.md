@@ -11,12 +11,12 @@ Commands: `render`, `validate`, `diff`, `expand`, `test`, `scan`, `mcp`,
 ## Version
 
 ```bash
-hypervis --version        # hypervis 0.2.0 (218d704 2026-11-06, aarch64-apple-darwin)
+hypervis --version        # hypervis 0.2.1 (…, aarch64-apple-darwin)
 hypervis version --json   # name, version, commit, commit_date, dirty, target
 ```
 
 Use it to confirm the install before relying on these notes (they describe
-v0.2.0) and to record which CLI produced a render or validation result. v0.1.0
+v0.2.1) and to record which CLI produced a render or validation result. v0.1.0
 has neither form.
 
 ## Help
@@ -54,16 +54,21 @@ hypervis render diagram.hvis --theme dark --detail overview --format svg -o over
 hypervis render diagram.hvis --size 1600x900 --format svg -o exact.svg
 hypervis render diagram.hvis --ratio 16:9 --width 1280 --format svg -o wide.svg
 hypervis render diagram.hvis --node PaymentService --format svg -o payment-service.svg
+hypervis render diagram.hvis --overlay PaymentPath -o payment-path.png
+hypervis render diagram.hvis --no-overlay -o plain.svg
+hypervis render diagram.hvis --svg-id-prefix d1- -o d1.svg
 hypervis render custom.hvis --type-path ./custom_type.py --format svg -o custom.svg
 ```
 
 The format is `--format` if given, else PNG when `-o` ends in `.png`, else SVG.
+Unknown `--format` values are rejected on `render` and `expand`.
 Without `-o` the output is `<input>.svg` (or `<input>.png`). Render validates
 first and fails on errors. It also prints render-only warnings such as
 `HVIS-LAYOUT-001` (a group title too wide to fit, so it is truncated), and a
 PNG whose text cannot be drawn fails with `HVIS-RENDER-FONT-*` errors and no
 file. See [rendering-and-scaling.md](./rendering-and-scaling.md) for sizing
-and fonts.
+and fonts. Overlays: [overlays.md](./overlays.md). Stable SVG ids:
+[svg-structure.md](./svg-structure.md).
 
 ## Scan
 
@@ -139,3 +144,7 @@ server `hvis`, with the tools `hvis_validate`, `hvis_render`, `hvis_expand`,
 `hvis_diff`, and `hvis_scan`. They take diagram text rather than a file path
 (`source`, or `old_source`/`new_source` for diff); `hvis_scan` takes an
 absolute directory path or GitHub URL as `source`.
+
+`hvis_render` accepts `overlays` (list of overlay names), `no_overlay: true`,
+and `svg_id_prefix`, matching CLI `--overlay`, `--no-overlay`, and
+`--svg-id-prefix`.
