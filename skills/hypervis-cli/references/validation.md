@@ -67,8 +67,22 @@ The description names the rule, for example:
 - `'AppNamespace[namespace]' looks like a nested node or edge; children must be written as list items`
 - `gantt does not use arrow edges; declare dependencies with 'depends_on:' on the task`
 
-Validators run in Python: they need Python 3.9+ as `python3` on `PATH`, or
-`HVIS_PYTHON_PATH` pointing at an interpreter.
+Validators run in Python 3.9+: they need `python3` on `PATH`, or
+`HVIS_PYTHON_PATH` pointing at an interpreter. Python runs in isolated mode
+(`-I`) from a private temporary directory with a minimal environment allowlist
+(`PATH`, `HOME`, `LANG`, `LC_*`, `TZ`, temp-dir variables), so `PYTHONPATH`,
+other `PYTHON*` variables, and user site-packages do not apply.
+
+Trust model: validating a file never imports code from its directory or from
+your working directory. Only the directory of the file passed with `--type-path`
+(MCP: `type_path`) is added to the import path. Custom types are code and run
+with your privileges—only pass types you trust.
+
+## Overlay Diagnostics
+
+Overlay rules are checked during `validate` and before `render`. See
+[overlays.md](./overlays.md) for syntax and semantics. Codes `HVIS-OVERLAY-001`
+through `HVIS-OVERLAY-007` are errors.
 
 ## Render Diagnostics
 

@@ -2,7 +2,7 @@
 # HyperVisual CLI installer: downloads the release binary from GitHub Releases
 # and installs it as `hypervis`, with `hvis` as a short alias. It does not
 # update an existing install.
-#   curl -fsSL https://github.com/hypervisual-io/hypervisual/releases/download/v0.2.0/install.sh | HYPERVISUAL_VERSION=v0.2.0 sh
+#   curl -fsSL https://github.com/hypervisual-io/hypervisual/releases/download/v0.2.1/install.sh | HYPERVISUAL_VERSION=v0.2.1 sh
 # Environment:
 #   HYPERVISUAL_VERSION      release tag to install (default: latest)
 #   HYPERVISUAL_INSTALL_DIR  target directory (default: $HOME/.local/bin)

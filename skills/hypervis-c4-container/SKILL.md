@@ -37,3 +37,4 @@ This skill assumes the `hypervis-cli` skill is installed. Use `hypervis-cli` for
 - Examples:
 - `references/examples/01-system-containers.hvis`
 - `references/examples/02-boundary-and-technology.hvis`
+- `references/examples/03-payment-path-overlay.hvis` (path overlay via top-level `overlay:`; see `hypervis-cli` `references/overlays.md`)

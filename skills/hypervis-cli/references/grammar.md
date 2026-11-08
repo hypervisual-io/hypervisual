@@ -11,8 +11,9 @@ keyword was removed" or "'fill' must be nested under 'style:'").
 
 ## Document Shape
 
-A file is one YAML mapping with exactly one key, the diagram declaration
-`Name[type]`, whose value is a list:
+A file is one YAML mapping with exactly one diagram declaration key
+`Name[type]` (whose value is a list) and optionally one top-level `overlay:`
+block (see [overlays.md](./overlays.md)):
 
 ```yaml
 Login[sequence]:
@@ -23,7 +24,8 @@ Login[sequence]:
 
 Rules:
 
-- The top level must be a mapping with exactly one string key.
+- The top level must be a mapping with one diagram key and at most one `overlay:`
+  key. Any other top-level key is an error.
 - That key must carry a `[type]` annotation.
 - Its value must be a YAML list. Every diagram item is a list item.
 
@@ -340,7 +342,7 @@ links:
 
 Some single-key list items configure the diagram instead of creating nodes:
 
-- all types: `layout`, `sources`, `test`, `theme`, `overlay`
+- all types: `layout`, `sources`, `test`, `theme`
 - `gantt`: `timeline`, `calendar`, `dependencies`, `defaults`, `markers`,
   `sort`, `critical_path`, `columns`
 - `threat-model`: `threats`
