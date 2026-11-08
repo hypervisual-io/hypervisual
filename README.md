@@ -64,6 +64,10 @@ Claude Code:
 claude mcp add hypervisual -- npx -y hypervis mcp
 ```
 
+## Use it in CI
+
+[docs/ci.md](docs/ci.md) has GitHub Actions workflows that show the diagram diff on every pull request and fail on invalid diagrams or broken architecture rules.
+
 ## License
 
 Apache-2.0

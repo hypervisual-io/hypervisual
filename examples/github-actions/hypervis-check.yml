@@ -1,0 +1,25 @@
+# Fails a pull request when a diagram is invalid or breaks an architecture rule.
+# Copy to .github/workflows/hypervis-check.yml and replace the example rule.
+name: Diagram check
+
+on:
+  pull_request:
+    paths: ['**.hvis']
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install hypervis
+        run: npm install -g hypervis@0.2.2 && hypervis version
+      - name: Validate every diagram
+        run: git ls-files -z '*.hvis' | xargs -0 -r -n1 hypervis validate
+      - name: Only the API talks to the database
+        run: hypervis query docs/architecture.hvis 'WebApp -> [database]' --expect none
