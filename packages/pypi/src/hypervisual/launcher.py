@@ -4,6 +4,7 @@ import platform
 import sys
 import tarfile
 import tempfile
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -25,17 +26,39 @@ def die(message):
     sys.exit(1)
 
 
+_DOWNLOAD_MAX_ATTEMPTS = 5
+
+
+def _urlopen_with_retry(url):
+    delay = 1
+    for attempt in range(_DOWNLOAD_MAX_ATTEMPTS):
+        try:
+            return urllib.request.urlopen(url)
+        except urllib.error.HTTPError as error:
+            if error.code == 404 or (error.code != 429 and error.code < 500):
+                raise
+            if attempt == _DOWNLOAD_MAX_ATTEMPTS - 1:
+                raise
+        except (urllib.error.URLError, TimeoutError, ConnectionError):
+            if attempt == _DOWNLOAD_MAX_ATTEMPTS - 1:
+                raise
+        time.sleep(delay)
+        delay *= 2
+
+
 def download(url):
     try:
-        with urllib.request.urlopen(url) as response:
+        with _urlopen_with_retry(url) as response:
             return response.read()
+    except urllib.error.HTTPError as error:
+        die(f"download failed: {url} ({error})")
     except OSError as error:
         die(f"download failed: {url} ({error})")
 
 
 def try_download(url):
     try:
-        with urllib.request.urlopen(url) as response:
+        with _urlopen_with_retry(url) as response:
             return response.read()
     except urllib.error.HTTPError as error:
         if error.code == 404:
