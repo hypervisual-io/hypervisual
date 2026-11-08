@@ -34,9 +34,9 @@ fi
 
 fetch() {
   if command -v curl >/dev/null 2>&1; then
-    curl -fsSL "$1" -o "$2"
+    curl --retry 4 --retry-delay 2 --retry-connrefused -fsSL "$1" -o "$2"
   elif command -v wget >/dev/null 2>&1; then
-    wget -q "$1" -O "$2"
+    wget --tries=5 -q "$1" -O "$2"
   else
     die "curl or wget is required"
   fi
