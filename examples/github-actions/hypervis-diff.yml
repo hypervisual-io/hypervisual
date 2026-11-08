@@ -1,0 +1,56 @@
+# Shows what changed in every .hvis diagram touched by a pull request:
+# a text summary on the run page, and a visual diff (SVG) per diagram in the
+# `hvis-diff` artifact. Copy to .github/workflows/hypervis-diff.yml.
+name: Diagram diff
+
+on:
+  pull_request:
+    paths: ['**.hvis']
+
+permissions:
+  contents: read
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install hypervis
+        run: npm install -g hypervis@0.2.2 && hypervis version
+      - name: Diff changed diagrams
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git diff -z --name-only --no-renames --diff-filter=AM "origin/$BASE_REF" HEAD -- '*.hvis' > "$RUNNER_TEMP/changed"
+          status=0
+          while IFS= read -r -d '' f; do
+            out="hvis-diff/$f.svg"
+            mkdir -p "$(dirname "$out")"
+            echo "### \`$f\`" >> "$GITHUB_STEP_SUMMARY"
+            if git show "origin/$BASE_REF:$f" > "$RUNNER_TEMP/base.hvis" 2>/dev/null; then
+              # diff prints to stderr and exits 1 both on changes and on errors; only errors leave no SVG.
+              if hypervis diff "$RUNNER_TEMP/base.hvis" "$f" --render "$out" 2> "$RUNNER_TEMP/diff.txt" || [ -f "$out" ]; then
+                { echo '```text'; sed '1d;/^Visual diff rendered/d' "$RUNNER_TEMP/diff.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+              else
+                cat "$RUNNER_TEMP/diff.txt" >&2
+                echo "::error file=$f::hypervis diff failed"; echo "Diff failed, see the job log." >> "$GITHUB_STEP_SUMMARY"; status=1
+              fi
+            elif hypervis render "$f" -o "$out"; then
+              echo "New diagram." >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::error file=$f::hypervis render failed"; echo "Render failed, see the job log." >> "$GITHUB_STEP_SUMMARY"; status=1
+            fi
+          done < "$RUNNER_TEMP/changed"
+          echo "Visual diffs (added green, removed red, changed amber): the \`hvis-diff\` artifact of this run." >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hvis-diff
+          path: hvis-diff/
+          if-no-files-found: ignore
